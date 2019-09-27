@@ -1,0 +1,32 @@
+.font-weight-bold {
+  font-weight: bold;
+}
+.font-weight-normal {
+  font-size: 14px;
+}
+.pointer {
+  cursor: pointer;
+}
+
+.inputfile {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+.inputfile + label {
+  font-size: 1.25em;
+  font-weight: 700;
+  color: rgb(175, 111, 111);
+  display: inline-block;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover {
+  background-color: rgba(233, 168, 168, 0.4);
+}
+.inputfile + label {
+  cursor: pointer; /* "hand" cursor */
+}
