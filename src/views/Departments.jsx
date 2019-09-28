@@ -16,10 +16,12 @@ class UserProfile extends Component {
         depName: "",
         desc: "",
         HODName: "",
-        status: ""
+        status: "active"
       },
       tabledata: [],
-      thArray: ["Id", "Name", "Description", "HOD", "", "Action"]
+      dltmodl: false,
+      thArray: ["Id", "Name", "Description", "HOD", "", "Action"],
+      dltitem: null
     };
   }
   // MyDropzone=()=> {
@@ -74,18 +76,22 @@ class UserProfile extends Component {
         })
         .then(success => {
           this.close();
+          this.componentDidMount();
         });
+    } else {
+      this.props.handleClick("tr", validation, "pe-7s-close", 3);
+      console.log(this.state.user);
     }
   };
   validate_form = data => {
     if (data.depName != "" && data.desc != "" && data.HODName != "") {
-      if (data.depName.length >= 10) {
+      if (data.depName.length >= 6) {
         return "good to go";
       } else {
-        return "Length of Department name is less then 10";
+        return "Length of Department name is less then 6";
       }
     } else {
-      return "none of the fields can be empty";
+      return "Please Input a Valid Input, All Fields Are Mendatory";
     }
   };
   open = () => {
@@ -108,6 +114,30 @@ class UserProfile extends Component {
   };
   propgetter = e => {
     console.log(e.target);
+  };
+  deleteConfirm = e => {
+    axios
+      .request({
+        method: "POST",
+        url: `http://localhost:3004/Departments/delete`,
+        data: { id: this.state.dltitem }
+      })
+      .then(success => {
+        this.props.handleClick(
+          "tr",
+          "Departemnt Deleted Successfully",
+          "pe-7s-check",
+          3
+        );
+        this.closedlt();
+        this.componentDidMount();
+      });
+  };
+  opendlt = e => {
+    this.setState({ dltmodl: true, dltitem: e.target.id });
+  };
+  closedlt = () => {
+    this.setState({ dltmodl: false, dltitem: null });
   };
   render() {
     return (
@@ -152,13 +182,14 @@ class UserProfile extends Component {
                               return <td key={key}>{prop}</td>;
                             })}
                             <td>
-                              <NavLink
-                                to={`doctors-details/${prop[0]}`}
+                              <Button
+                                small="true"
                                 className="nav-link btn btn-success"
-                                activeClassName="active"
+                                id={prop[0]}
+                                onClick={this.opendlt}
                               >
-                                <i className="fa fa-trash" />
-                              </NavLink>
+                                <i id={prop[0]} className="fa fa-trash" />
+                              </Button>
                             </td>
                           </tr>
                         );
@@ -170,6 +201,32 @@ class UserProfile extends Component {
             </Col>
           </Row>
         </Grid>
+        <Modal
+          show={this.state.dltmodl}
+          onHide={this.closedlt}
+          animation={true}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="text-captialize">
+              <i className="fa fa-trash"></i>
+              Confirm Delete Department
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-captialize">
+            are you sure about deleting this Department from database
+            <p>no can be see this after deletion</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button bsStyle="success" fill onClick={this.closedlt}>
+              <i className="fa fa-times"></i>
+              Close
+            </Button>
+            <Button bsStyle="warning" fill onClick={this.deleteConfirm}>
+              <i className="fa fa-check"></i>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         <div>
           <Modal bsSize="large" show={this.state.showModal} onHide={this.close}>

@@ -60,8 +60,16 @@ class UserProfile extends Component {
       })
       .then(response => {
         //handle success
-        this.setState({ user: response.data[0] });
-        console.log(this.state.user);
+        let user = this.state.user;
+        user = response.data[0];
+        if (response.data[0].refferedTo) {
+          user.refferedto =
+            "Doctor " +
+            response.data[0].refferedTo.firstname +
+            " " +
+            response.data[0].refferedTo.lastname;
+        }
+        this.setState({ user });
       })
       .catch(function(response) {
         //handle error
@@ -81,7 +89,7 @@ class UserProfile extends Component {
             item.firstname + " " + item.lastname + " (" + item._id + ")";
           successNew.push(obj);
         });
-        this.state.user.refferedTo = successNew[0];
+        user.refferedTo = successNew;
         Doctors = successNew;
         this.setState({
           Doctors,
@@ -90,7 +98,22 @@ class UserProfile extends Component {
       });
   };
   deleteProfile = () => {
-    console.log(this.state.user._id);
+    let id = this.state.user._id;
+    axios({
+      method: "post",
+      url: "http://localhost:3004/Patients/delete",
+      data: { id: id },
+      config: { headers: { "Content-Type": "multipart/form-data" } }
+    })
+      .then(response => {
+        //handle success
+        this.handleClose();
+        this.props.history.push("/admin/patients");
+      })
+      .catch(function(response) {
+        //handle error
+        console.log(response);
+      });
   };
   updateProfile = () => {
     axios({
@@ -100,6 +123,7 @@ class UserProfile extends Component {
       config: { headers: { "Content-Type": "multipart/form-data" } }
     })
       .then(response => {
+        console.log(response);
         //handle success
         this.handleCloseUpdate();
         this.componentDidMount();
@@ -126,33 +150,8 @@ class UserProfile extends Component {
     this.setState({ picModal: true, currentfile });
   };
   picmodalCloser = () => {
-    this.setState({ picModal: false, file: null, currentfile: null });
-  };
-  filechanger = e => {
-    let patient = e.target.files[0];
-    console.log(this.state.patient);
-    this.setState({ patient: true });
-    console.log(this.state.patient);
-  };
-  fileUploader = () => {
-    console.log(this.state.file);
-    var bodyFormData = new FormData();
-    bodyFormData.set("userName", "Fred");
-    bodyFormData.append("image", this.state.file);
-    axios({
-      method: "post",
-      url: "http://localhost:3004/Patients/updatepic",
-      data: bodyFormData,
-      config: { headers: { "Content-Type": "multipart/form-data" } }
-    })
-      .then(function(response) {
-        //handle success
-        console.log(response);
-      })
-      .catch(function(response) {
-        //handle error
-        console.log(response);
-      });
+    console.log(this.state);
+    this.setState({ picModal: false });
   };
   render() {
     return (
@@ -248,13 +247,8 @@ class UserProfile extends Component {
                         </label>
                         <strong id="refferedto">
                           {this.state.user
-                            ? this.state.user.refferedTo
+                            ? this.state.user.refferedto
                             : "Refferal Doctor Profile Unavailable"}
-                          {/* {this.state.user
-                            ? this.state.user.refferedto != null
-                              ? this.state.user.refferedto
-                              : "Dr Profile Is not Accessible"
-                            : "Dr Name"} */}
                         </strong>
                       </Col>
                     </Row>
@@ -433,7 +427,7 @@ class UserProfile extends Component {
                           id="refferedTo"
                           key={this.state.Doctors.id}
                           onChange={this.valueChanged}
-                          value={this.state.user.refferedTo}
+                          value={this.state.user.refferedto}
                           placeholder="Select an option"
                         />
                       </FormGroup>
@@ -491,18 +485,6 @@ class UserProfile extends Component {
                 ) : (
                   ""
                 )}
-                <input
-                  type="file"
-                  name="file"
-                  id="file"
-                  className="inputfile"
-                  onChange={this.filechanger}
-                />
-                <label id="namefile" htmlFor="file">
-                  Choose a file...
-                </label>
-                {/* <input type="file" name="file" id="profile-img" />
-<img src="" id="profile-img-tag" width="200px" /> */}
               </Modal.Body>
               <Modal.Footer>
                 <Button

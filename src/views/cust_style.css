@@ -30,3 +30,6 @@
 .inputfile + label {
   cursor: pointer; /* "hand" cursor */
 }
+.text-captialize{
+  text-transform: capitalize
+}

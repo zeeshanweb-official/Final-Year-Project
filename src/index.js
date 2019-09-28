@@ -12,7 +12,9 @@ import "./assets/css/pe-icon-7-stroke.css";
 
 import AdminLayout from "layouts/Admin.jsx";
 import AdminLayout2 from "layouts/signin";
-function DoAthing() {}
+function DoAthing() {
+ 
+}
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
@@ -20,7 +22,6 @@ ReactDOM.render(
         path="/admin"
         render={props => <AdminLayout v={DoAthing} {...props} />}
       />
-
       <Route
         path="/signin"
         render={props => <AdminLayout2 v={DoAthing} {...props} />}

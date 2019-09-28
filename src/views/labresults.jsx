@@ -29,7 +29,8 @@ class UserProfile extends Component {
       showModal: false,
       nameSearch: "",
       PatientsModal: [],
-      file: {}
+      file: {},
+      dltmodl: false
     };
   }
   componentDidMount = () => {
@@ -73,7 +74,6 @@ class UserProfile extends Component {
     let name = document.getElementById("name").value;
     let id = document.getElementById("id").value;
     if (name == " " || id == " " || name == "" || id == "") {
-      console.log("data not valid");
       this.props.handleClick(
         "tr",
         "Please input valid data, All fields are compulsory",
@@ -135,6 +135,12 @@ class UserProfile extends Component {
         //handle error
         console.log(response);
       });
+  };
+  open = () => {
+    this.setState({ dltmodl: true });
+  };
+  close = () => {
+    this.setState({ dltmodl: false });
   };
   render() {
     return (

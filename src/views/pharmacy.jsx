@@ -15,7 +15,9 @@ class UserProfile extends Component {
       medicine: {
         medname: "",
         medfor: "",
-        quantity: 0
+        quantity: 0,
+        dltmdl: false,
+        dltitem: ""
       }
     };
   }
@@ -26,14 +28,13 @@ class UserProfile extends Component {
       config: { headers: { "Content-Type": "multipart/form-data" } }
     })
       .then(response => {
-        console.log(response);
+        let tdArray = [];
         response.data.map(item => {
-          console.log(item);
           let array = [item._id, item.name, item.for, item.quantity];
-          let tdArray = this.state.tdArray;
           tdArray.push(array);
-          this.setState({ tdArray });
         });
+        this.setState({ tdArray });
+        // window.location.assign("https://www.google.com");
       })
       .catch(function(response) {
         //handle error
@@ -67,6 +68,35 @@ class UserProfile extends Component {
     let medicine = this.state.medicine;
     medicine[e.target.name] = e.target.value;
     this.setState({ medicine });
+  };
+  opendlt = e => {
+    this.setState({ dltmdl: true, dltitem: e.target.id });
+  };
+  closedlt = () => {
+    this.setState({ dltmdl: false, dltitem: null });
+  };
+  ConfirmDlt = () => {
+    axios({
+      method: "post",
+      url: "http://localhost:3004/medicine/delete",
+      data: { id: this.state.dltitem },
+      config: { headers: { "Content-Type": "multipart/form-data" } }
+    })
+      .then(response => {
+        //handle success
+        this.closedlt();
+        this.componentDidMount();
+        this.props.handleClick("tr", "Deleted Successfully", "pe-7s-close", 3);
+      })
+      .catch(response => {
+        //handle error
+        this.props.handleClick(
+          "tr",
+          "Data Cannot Be Deleted",
+          "pe-7s-close",
+          3
+        );
+      });
   };
   render() {
     return (
@@ -115,13 +145,13 @@ class UserProfile extends Component {
                                   return <td key={key}>{prop}</td>;
                                 })}
                                 <td>
-                                  <NavLink
-                                    to={`details/${prop[0]}`}
+                                  <Button
+                                    onClick={this.opendlt}
+                                    id={prop[0]}
                                     className="nav-link btn btn-success"
-                                    activeClassName="active"
                                   >
-                                    <i className="fa fa-trash" />
-                                  </NavLink>
+                                    <i id={prop[0]} className="fa fa-trash" />
+                                  </Button>
                                 </td>
                               </tr>
                             );
@@ -131,6 +161,26 @@ class UserProfile extends Component {
                   </Table>
                 }
               />
+              <Modal
+                show={this.state.dltmdl}
+                onHide={this.closedlt}
+                animation={true}
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title>Modal heading</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  Woohoo, you're reading this text in a modal!
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={this.closedlt}>
+                    Close
+                  </Button>
+                  <Button variant="primary" onClick={this.ConfirmDlt}>
+                    Save Changes
+                  </Button>
+                </Modal.Footer>
+              </Modal>
             </Col>
           </Row>
         </Grid>

@@ -22,11 +22,12 @@ class UserProfile extends Component {
         age: "",
         gender: "",
         disease: "",
-        refferedTo: ""
+        refferedTo: "",
+        cnic: ""
       },
       Doctors: [],
       tdArray: [],
-      thArray: ["name", "age", "gender", "reffered To", "action"],
+      thArray: ["CNIC", "age", "gender", "reffered To", "action"],
       file: null
     };
   }
@@ -62,7 +63,7 @@ class UserProfile extends Component {
         success.data.map(item => {
           if (item.refferedTo) {
             item.refferedTo =
-              "DR. " + item.refferedTo.firstname + item.refferedTo.lastname;
+              "DR. " + item.refferedTo.firstname +" "+ item.refferedTo.lastname;
           }
         });
         var tdArray = this.state.tdArray;
@@ -81,6 +82,7 @@ class UserProfile extends Component {
         this.setState({
           tdArray
         });
+        console.log(this.state);
       });
   }
   getInitialState = () => {
@@ -163,24 +165,6 @@ class UserProfile extends Component {
                     statsIconText="Updated now"
                   />
                 </Col>
-                {/* <Col lg={3} sm={6}>
-                  <StatsCard
-                    bigIcon={<i className="pe-7s-monitor text-success" />}
-                    statsText="Onboard"
-                    statsValue="5"
-                    statsIcon={<i className="fa fa-refresh" />}
-                    statsIconText="Updated now"
-                  />
-                </Col>
-                <Col lg={3} sm={6}>
-                  <StatsCard
-                    bigIcon={<i className="pe-7s-diamond text-primary" />}
-                    statsText="Finished Today"
-                    statsValue="6"
-                    statsIcon={<i className="fa fa-refresh" />}
-                    statsIconText="Updated now"
-                  />
-                </Col> */}
               </Row>
             </Col>
           </Row>
@@ -278,6 +262,7 @@ class UserProfile extends Component {
                     />
                   </div>
                 </div>
+
                 <br />
                 <div className="row">
                   <div className="col-md-12 col-sm-12">
@@ -291,6 +276,20 @@ class UserProfile extends Component {
                       id="address"
                       className="form-control"
                       placeholder="Complete Postal Address i.e house no 5 street no 6 Sarwari Road Faisalabad"
+                    />
+                  </div>
+                </div>
+                <br />
+                <div className="row">
+                  <div className="col-md-6 col-sm-12">
+                    <label htmlFor="firstname"> CNIC </label>
+                    <input
+                      type="text"
+                      onChange={this.changeHandler}
+                      value={this.state.cnic ? this.state.cnic : null}
+                      required={true}
+                      id="cnic"
+                      className="form-control"
                     />
                   </div>
                 </div>
@@ -391,28 +390,6 @@ class UserProfile extends Component {
                   </div>
                 </div>
                 <br />
-                {/* <div className="row">
-                  <div className="col-md-5 col-sm-12"></div>
-                  <div className="col-md-2 col-sm-12">
-                    <div
-                      className="fileinputdiv"
-                      onClick={() => {
-                        this.fileinput.click();
-                      }}
-                    >
-                      click here to upload images
-                    </div>
-                    <input
-                      style={{ display: "none" }}
-                      type="file"
-                      name="myImage"
-                      ref={fileinput => {
-                        this.fileinput = fileinput;
-                      }}
-                      onChange={this.onChange}
-                    />
-                  </div>
-                </div> */}
               </form>
             </Modal.Body>
             <Modal.Footer>
