@@ -9,7 +9,7 @@ import {
   FormControl,
   Modal
 } from "react-bootstrap";
-
+import Chips, { Chip } from "react-chips";
 import Dropdown from "react-dropdown";
 import "react-dropdown/style.css";
 import { Card } from "components/Card/Card.jsx";
@@ -19,6 +19,7 @@ import Button from "components/CustomButton/CustomButton.jsx";
 import avatar from "assets/img/faces/face-3.jpg";
 import "./cust_style.css";
 import "./custscript";
+import { sign } from "crypto";
 const axios = require("axios");
 class UserProfile extends Component {
   constructor(props) {
@@ -30,7 +31,8 @@ class UserProfile extends Component {
       showDelet: false,
       showUpdate: false,
       picModal: false,
-      currentfile: null
+      currentfile: null,
+      medicines: []
     };
   }
   handleClose = e => {
@@ -67,7 +69,10 @@ class UserProfile extends Component {
             "Doctor " +
             response.data[0].refferedTo.firstname +
             " " +
-            response.data[0].refferedTo.lastname;
+            response.data[0].refferedTo.lastname +
+            " (" +
+            response.data[0].refferedTo._id +
+            ")";
         }
         this.setState({ user });
       })
@@ -95,6 +100,18 @@ class UserProfile extends Component {
           Doctors,
           user
         });
+      });
+    axios
+      .request({
+        method: "Get",
+        url: `http://localhost:3004/medicine/list`
+      })
+      .then(success => {
+        let medicines = this.state.medicines;
+        success.data.map(item => {
+          medicines.push(item.name);
+        });
+        this.setState({ medicines });
       });
   };
   deleteProfile = () => {
@@ -152,6 +169,11 @@ class UserProfile extends Component {
   picmodalCloser = () => {
     console.log(this.state);
     this.setState({ picModal: false });
+  };
+  changemedicines = chips => {
+    let user = this.state.user;
+    user.medicines = chips;
+    this.setState({ user });
   };
   render() {
     return (
@@ -228,7 +250,7 @@ class UserProfile extends Component {
                       </Col>
                     </Row>
                     <Row>
-                      <Col md={6}>
+                      <Col md={4}>
                         <label style={{ display: "block" }} htmlFor="address">
                           Address:
                         </label>
@@ -238,7 +260,15 @@ class UserProfile extends Component {
                             : "Address"}
                         </strong>
                       </Col>
-                      <Col md={6}>
+                      <Col md={4}>
+                        <label style={{ display: "block" }} htmlFor="age">
+                          CNIC:
+                        </label>
+                        <strong id="age">
+                          {this.state.user ? this.state.user.cnic : "Age"}
+                        </strong>
+                      </Col>
+                      <Col md={4}>
                         <label
                           style={{ display: "block" }}
                           htmlFor="refferedto"
@@ -259,7 +289,7 @@ class UserProfile extends Component {
                         </label>
                         <strong id="firstname">
                           {this.state.user
-                            ? this.state.user.medicines
+                            ? this.state.user.medicines + "  " + " "
                             : "Medicinces"}
                         </strong>
                       </Col>
@@ -419,31 +449,49 @@ class UserProfile extends Component {
                 </Row>
                 <Row>
                   <Form>
-                    <Col md={12}>
-                      <FormGroup controlId="Mobile">
-                        <ControlLabel>Reffered To:</ControlLabel>
-                        <Dropdown
-                          options={this.state.Doctors}
-                          id="refferedTo"
-                          key={this.state.Doctors.id}
-                          onChange={this.valueChanged}
-                          value={this.state.user.refferedto}
-                          placeholder="Select an option"
-                        />
+                    <Col md={6}>
+                      <ControlLabel>CNIC:</ControlLabel>
+                      <FormControl
+                        type="text"
+                        name="cnic"
+                        className="cnic"
+                        onChange={this.textValueChanged}
+                        placeholder="CNIC Number"
+                        value={this.state.user.cnic ? this.state.user.cnic : ""}
+                      />
+                    </Col>
+                    <Col md={6}>
+                      <FormGroup controlId="medicines">
+                        <ControlLabel>Prescription:</ControlLabel>
+                        <div>
+                          <Chips
+                            value={this.state.user.medicines}
+                            onChange={this.changemedicines}
+                            suggestions={this.state.medicines}
+                          />
+                        </div>
+                        {/* <FormControl
+                          type="text"
+                          name="medicines"
+                          onChange={this.textValueChanged}
+                          placeholder="Prescription for Cure"
+                          value={this.state.user.medicines}
+                        /> */}
                       </FormGroup>
                     </Col>
                   </Form>
                 </Row>
                 <Row>
                   <Col md={12}>
-                    <FormGroup controlId="medicines">
-                      <ControlLabel>Prescription:</ControlLabel>
-                      <FormControl
-                        type="text"
-                        name="medicines"
-                        onChange={this.textValueChanged}
-                        placeholder="Prescription for Cure"
-                        value={this.state.user.medicines}
+                    <FormGroup controlId="Mobile">
+                      <ControlLabel>Reffered To:</ControlLabel>
+                      <Dropdown
+                        options={this.state.Doctors}
+                        id="refferedTo"
+                        key={this.state.Doctors.id}
+                        onChange={this.valueChanged}
+                        value={this.state.user.refferedto}
+                        placeholder="Select an option"
                       />
                     </FormGroup>
                   </Col>
@@ -496,14 +544,7 @@ class UserProfile extends Component {
                   <i className="fa fa-times"></i>
                   Close
                 </Button>
-                {this.state.file ? (
-                  <Button bsStyle="primary" fill onClick={this.fileUploader}>
-                    <i className="fa fa-upload"></i>
-                    Upload File
-                  </Button>
-                ) : (
-                  ""
-                )}
+                
               </Modal.Footer>
             </Modal>
             <Col md={4}>

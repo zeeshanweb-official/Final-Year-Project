@@ -18,19 +18,23 @@ import { UserCard } from "components/UserCard/UserCard.jsx";
 import Button from "components/CustomButton/CustomButton.jsx";
 import avatar from "assets/img/faces/face-3.jpg";
 import { async } from "q";
+import "./style.css";
 
 class UserProfile extends Component {
   constructor(props) {
     super();
     this.state = {
-      thArray: ["ID", "Name", "Salary", "Country", "Action"],
+      thArray: ["Name", "Age", "Gender", "CNIC", "Action"],
       thNames: ["ID", "Name", "Age", "Gender"],
       tdArray: [],
+      docname: "",
       showModal: false,
       nameSearch: "",
       PatientsModal: [],
       file: {},
-      dltmodl: false
+      dltmodl: false,
+      viewmodl: false,
+      current: {}
     };
   }
   componentDidMount = () => {
@@ -48,13 +52,15 @@ class UserProfile extends Component {
             item._id,
             item.firstname + " " + item.lastname,
             item.age,
-            item.gender
+            item.gender,
+            item.cnic
           ];
           successNew.push(obj);
         });
         tdArray = successNew;
         this.setState({
-          tdArray
+          tdArray,
+          fulldata: JSON.stringify(success.data)
         });
       })
       .catch(function(response) {
@@ -84,7 +90,7 @@ class UserProfile extends Component {
       var bodyFormData = new FormData();
       bodyFormData.append("name", name);
       bodyFormData.append("id", id);
-      bodyFormData.append("myImage", this.state.file);
+      bodyFormData.append(this.state.docname, this.state.file);
       axios({
         method: "post",
         url: "http://localhost:3004/Patients/UploadLabDocs",
@@ -142,6 +148,63 @@ class UserProfile extends Component {
   close = () => {
     this.setState({ dltmodl: false });
   };
+
+  openviewer = e => {
+    let data = this.state.fulldata;
+    data = JSON.parse(data);
+    data.map(item => {
+      if (item._id === e.target.id) {
+        this.setState({ current: item, viewmodl: true });
+      }
+    });
+  };
+  closeViewer = () => {
+    this.setState({ viewmodl: false });
+  };
+  docnamechanger = e => {
+    this.setState({ docname: e.target.value });
+  };
+  filevalidator = e => {
+    let type = e.target.files[0].type;
+    if (type == "image/jpeg" || type == "image/jpg" || type == "image/png") {
+      this.setState({ file: e.target.files[0] });
+    } else {
+      this.props.handleClick(
+        "tr",
+        "Please input valid data, Only jpg, jpeg, png files are Allowed",
+        "pe-7s-close",
+        3
+      );
+    }
+  };
+  dltpic = (item, file) => {
+    this.state.current.extraFiles.map(itm => {
+      if (itm === item) {
+        console.log(itm, item, this.state.current._id);
+        axios({
+          method: "post",
+          url: "http://localhost:3004/Patients/DeleteLabDocs",
+          data: { file: item, patient: this.state.current._id },
+          config: { headers: { "Content-Type": "multipart/form-data" } }
+        })
+          .then(response => {
+            //handle success
+            this.props.handleClick(
+              "tr",
+              "File Deleted Successfully",
+              "pe-7s-close",
+              3
+            );
+            this.componentDidMount();
+            this.closeViewer();
+          })
+          .catch(function(response) {
+            //handle error
+            console.log(response);
+          });
+      }
+    });
+  };
   render() {
     return (
       <div className="content">
@@ -163,7 +226,7 @@ class UserProfile extends Component {
                         className="btn-block btn-primary"
                       >
                         <i className="fa fa-plus"></i>
-                        New Report
+                        New File
                       </Button>
                     </Col>
                   </Row>
@@ -185,17 +248,21 @@ class UserProfile extends Component {
                         ? this.state.tdArray.map((prop, key) => {
                             return (
                               <tr key={key}>
-                                {prop.map((prop, key) => {
-                                  return <td key={key}>{prop}</td>;
+                                {prop.map((item, index) => {
+                                  if (!(index == 0)) {
+                                    return <td key={index}>{item}</td>;
+                                  } else {
+                                    return true;
+                                  }
                                 })}
                                 <td>
-                                  <NavLink
-                                    to={`details/${prop[0]}`}
+                                  <Button
+                                    id={prop[0]}
                                     className="nav-link btn btn-success"
-                                    activeClassName="active"
+                                    onClick={this.openviewer}
                                   >
-                                    <i className="fa fa-eye" />
-                                  </NavLink>
+                                    <i id={prop[0]} className="fa fa-eye" />
+                                  </Button>
                                 </td>
                               </tr>
                             );
@@ -307,12 +374,26 @@ class UserProfile extends Component {
                       ref={fileinput => {
                         this.fileinput = fileinput;
                       }}
-                      onChange={e => {
-                        this.setState({ file: e.target.files[0] });
-                      }}
+                      accept="image/*"
+                      onChange={this.filevalidator}
                     />
                   </div>
                 </div>
+                <Row>
+                  <Col md={12}>
+                    <div className="form-group">
+                      <label htmlFor="docname">Document Name :</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        onChange={this.docnamechanger}
+                        name="docname"
+                        id="docname"
+                        placeholder="Document Name"
+                      />
+                    </div>
+                  </Col>
+                </Row>
               </Modal.Body>
               <Modal.Footer>
                 <Button
@@ -334,6 +415,91 @@ class UserProfile extends Component {
             </Modal>
           </Row>
         </Grid>
+        <Modal
+          show={this.state.viewmodl}
+          onHide={this.closeViewer}
+          animation={true}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>View Documents</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {this.state.current.extraFiles
+              ? this.state.current.extraFiles.map((item, index) => {
+                  console.log(item);
+                  if (item) {
+                    let name = Object.keys(item);
+                    let file = Object.values(item);
+
+                    var res = file[0].split(".");
+                    if (
+                      res[res.length - 1] === "png" ||
+                      res[res.length - 1] === "PNG" ||
+                      res[res.length - 1] === "jpg" ||
+                      res[res.length - 1] === "jpeg" ||
+                      res[res.length - 1] === "JPG" ||
+                      res[res.length - 1] === "JPEG"
+                    ) {
+                      return (
+                        <div key={index}>
+                          <figure className="figure">
+                            <img
+                              src={
+                                `http://localhost:3004/extrafiles/` + file[0]
+                              }
+                              style={{ width: 100 + "%" }}
+                              className="figure-img img-fluid rounded"
+                              alt="A generic square placeholder image with rounded corners in a figure."
+                            />
+
+                            <figcaption className="figure-caption">
+                              <p>
+                                type: <strong>{name}</strong>
+                              </p>
+                              <p>{file[0]}</p>
+                              <div
+                                className="deleter"
+                                onClick={() => {
+                                  this.dltpic(item, file);
+                                }}
+                              >
+                                <i className="fa fa-times"></i>
+                                <strong>Delete File</strong>
+                              </div>
+                            </figcaption>
+                          </figure>
+                        </div>
+                      );
+                    }
+                  }
+                })
+              : ""}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={this.closeViewer}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal
+          show={this.state.updateDoc}
+          onHide={this.closeupdt}
+          animation={true}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>View Documents</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={this.closeupdt}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={this.closeupdt}>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     );
   }

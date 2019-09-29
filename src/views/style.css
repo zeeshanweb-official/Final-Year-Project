@@ -1,0 +1,7 @@
+.deleter {
+  font-size: 20px;
+  cursor: pointer;
+}
+.deleter:hover {
+  color: rgb(87, 186, 219);
+}

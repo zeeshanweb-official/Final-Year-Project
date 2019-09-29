@@ -27,7 +27,7 @@ class UserProfile extends Component {
       },
       Doctors: [],
       tdArray: [],
-      thArray: ["CNIC", "age", "gender", "reffered To", "action"],
+      thArray: ["Name", "Age", "Gender", "reffered To", "CNIC", "Action"],
       file: null
     };
   }
@@ -63,7 +63,10 @@ class UserProfile extends Component {
         success.data.map(item => {
           if (item.refferedTo) {
             item.refferedTo =
-              "DR. " + item.refferedTo.firstname +" "+ item.refferedTo.lastname;
+              "DR. " +
+              item.refferedTo.firstname +
+              " " +
+              item.refferedTo.lastname;
           }
         });
         var tdArray = this.state.tdArray;
@@ -74,7 +77,8 @@ class UserProfile extends Component {
             item.firstname + " " + item.lastname,
             item.age,
             item.gender,
-            item.refferedTo
+            item.refferedTo,
+            item.cnic
           ];
           successNew.push(obj);
         });
@@ -127,6 +131,7 @@ class UserProfile extends Component {
     formData.append("gender", this.state.user.gender);
     formData.append("refferedTo", this.state.user.refferedTo);
     formData.append("disease", this.state.user.disease);
+    formData.append("cnic", this.state.user.cnic);
     const config = {
       headers: {
         "content-type": "multipart/form-data"
@@ -205,9 +210,14 @@ class UserProfile extends Component {
                         ? this.state.tdArray.map((prop, key) => {
                             return (
                               <tr key={key}>
-                                {prop.map((prop, key) => {
-                                  return <td key={key}>{prop}</td>;
+                                {prop.map((item, index) => {
+                                  if (!(index == 0)) {
+                                    return <td key={index}>{item}</td>;
+                                  } else {
+                                    return true;
+                                  }
                                 })}
+
                                 <td>
                                   <NavLink
                                     to={`patient_details/${prop[0]}`}

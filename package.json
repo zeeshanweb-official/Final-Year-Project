@@ -22,6 +22,7 @@
     "react-bootstrap": "0.32.4",
     "react-bootstrap-dropdown-menu": "^1.1.15",
     "react-chartist": "0.13.3",
+    "react-chips": "^0.8.0",
     "react-dom": "16.8.6",
     "react-dropdown": "^1.6.4",
     "react-dropzone": "^10.1.7",

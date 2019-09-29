@@ -49,6 +49,21 @@ class UserProfile extends Component {
       config: { headers: { "Content-Type": "multipart/form-data" } }
     })
       .then(response => {
+        if (response.data.name == "MongoError") {
+          this.props.handleClick(
+            "tr",
+            "Medicine is already in stock... try different Name",
+            "pe-7s-close",
+            3
+          );
+        } else {
+          this.props.handleClick(
+            "tr",
+            "Medicine is added to stock successfully",
+            "pe-7s-check",
+            3
+          );
+        }
         //handle success
         this.componentDidMount();
         let medicine = this.state.medicine;
